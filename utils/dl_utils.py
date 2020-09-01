@@ -91,35 +91,6 @@ def weights_init_xavie(m):
             m.bias.data.zero_()
 
 
-def truncated_normal_(tensor, mean=0, std=0.01):
-    size = tensor.shape
-    tmp = tensor.new_empty(size + (4,)).normal_()
-    valid = (tmp < 2) & (tmp > -2)
-    ind = valid.max(-1, keepdim=True)[1]
-    tensor.data.copy_(tmp.gather(-1, ind).squeeze(-1))
-    tensor.data.mul_(std).add_(mean)
-    return tensor
-
-
-def weights_init_truncated_normal(m):
-    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Linear):
-        truncated_normal_(m.weight)
-        if m.bias is not None:
-            m.bias.data.zero_()
-
-
-def weight_init_he(m):
-    if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Linear):
-        torch.nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
-        if m.bias is not None:
-            m.bias.data.zero_()
-
-
-class DefaultDataLoader(DataLoader):
-    def __init__(self, dataset, **kwargs) -> None:
-        super().__init__(dataset, shuffle=True, num_workers=5, collate_fn=id_collate, pin_memory=True, **kwargs)
-
-
 def get_list_aus(aus, locations):
     result = []
     for au in aus:

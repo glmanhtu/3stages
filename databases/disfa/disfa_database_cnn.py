@@ -1,10 +1,9 @@
-from common.utils.constants import DISFA_DATASET_PATH
 from databases.disfa.disfa_database import DISFADataset, DISFA_AUS
 
 
 class DISFADatasetCNN(DISFADataset):
 
-    def __init__(self, dataset_path=DISFA_DATASET_PATH, excluded_subjects=None, transforms=None, init_transform=None,
+    def __init__(self, dataset_path, excluded_subjects=None, transforms=None, init_transform=None,
                  crop_size=224, balancing_aus=None, min_num_aus=1):
 
         super().__init__(dataset_path, excluded_subjects, transforms, init_transform, crop_size)

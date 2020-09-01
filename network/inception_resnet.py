@@ -6,8 +6,7 @@ from utils.constants import device as device_id
 
 
 class InceptionResnetCustom(InceptionResnetV1):
-    def __init__(self, pretrained=None, classify=False, num_classes=None, dropout_prob=0.6,
-                device=None):
+    def __init__(self, pretrained=None, classify=False, num_classes=None, dropout_prob=0.6, device=None):
         """
         The aim of this class is to modify the forward method, for extracting the embedding features
         Without having to modify the original class

@@ -5,13 +5,7 @@ import re
 import cv2
 import scipy.io
 import torch
-import torchvision
-import numpy as np
 from torch.utils.data import Dataset
-
-from common.utils.constants import DISFA_BASE_GPA_LANDMARKS_PATH
-from common.utils.random_utils import RandomItem
-from preprocessing.common.image import CentralCrop, GPAAlignment
 
 DISFA_AUS = ['au_1', 'au_2', 'au_4', 'au_5', 'au_6', 'au_9', 'au_12', 'au_15', 'au_17', 'au_20', 'au_25', 'au_26']
 
@@ -30,11 +24,7 @@ class DISFADataset(Dataset):
         assert os.path.isdir(self.dlib_landmarks_path)
         self.transform = transforms
         self.excluded_subjects = excluded_subjects
-
-        base_gpa = np.load(DISFA_BASE_GPA_LANDMARKS_PATH)
-        self.default_transforms = torchvision.transforms.Compose([GPAAlignment(base_gpa), CentralCrop(crop_size)])
-        if default_transform is not None:
-            self.default_transforms = default_transform
+        self.default_transforms = default_transform
 
         self.ids = getting_ids(self.frame_labels_path)
 
@@ -43,8 +33,6 @@ class DISFADataset(Dataset):
 
     def get_frame_data(self, idx):
         item = self.ids[idx]
-        if isinstance(item, RandomItem):
-            item = item.get()
         subject, frame = item['subject'], item['frame']
         file_path = os.path.join(self.image_path, 'LeftVideo%s_comp.avi' % subject, 'frame-%d.jpg' % frame)
         if not os.path.exists(file_path):

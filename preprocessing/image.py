@@ -1,13 +1,10 @@
-from random import randrange
-
 import cv2
 import numpy as np
 import torch
 
-from utils.constants import UNBC_BASE_GPA_LANDMARKS_PATH
 from preprocessing import gpa
-
 from preprocessing.unbc_transform import get_landmark_most_points
+from utils.constants import UNBC_BASE_GPA_LANDMARKS_PATH
 
 
 def transform_landmarks(landmarks, rotate):
@@ -24,49 +21,6 @@ class FixedImageStandardization(object):
     def __call__(self, sample):
         processed_tensor = (sample * 255 - 127.5) / 128.0
         return processed_tensor
-
-
-class NPFixedImageStandardization(object):
-
-    def __call__(self, sample):
-        return (sample - 127.5) / 128.0
-
-
-class PerPixelMeanSubtraction(object):
-
-    def __init__(self, image_mean_file):
-        self.image_mean = torch.load(image_mean_file)
-
-    def __call__(self, sample):
-        return sample - self.image_mean
-
-
-class Resize:
-    def __init__(self, output_size):
-        assert isinstance(output_size, (int, tuple))
-        if isinstance(output_size, int):
-            self.output_size = (output_size, output_size)
-        else:
-            assert len(output_size) == 2
-            self.output_size = output_size
-
-    def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
-
-        h, w = image.shape[:2]
-        new_h, new_w = self.output_size
-
-        if new_w > image.shape[1]:
-            image = cv2.resize(image, self.output_size, interpolation=cv2.INTER_CUBIC)
-        else:
-            image = cv2.resize(image, self.output_size, interpolation=cv2.INTER_AREA)
-
-        landmarks *= [new_w / w, new_h / h]
-
-        sample['image'] = image
-        sample['landmarks'] = landmarks
-
-        return sample
 
 
 class CentralCrop(object):
@@ -152,25 +106,6 @@ class AUCentralLocalisation:
         return sample
 
 
-class RandomLandmarkRotation:
-    def __init__(self, mean_shape=None, degree=20, prob=0.5):
-        if mean_shape is None:
-            self.mean_shape = np.load(UNBC_BASE_GPA_LANDMARKS_PATH)
-        else:
-            self.mean_shape = mean_shape
-        self.degree = degree
-        self.prob = prob
-
-    def __call__(self, sample):
-        should_rotate = np.random.choice(np.arange(0, 2), p=[1 - self.prob, self.prob])
-        mean_shape = self.mean_shape
-        if should_rotate:
-            angle = randrange(-self.degree, self.degree)
-            rot_mat = cv2.getRotationMatrix2D(tuple(self.mean_shape.mean(axis=0)), angle, 1.0)
-            mean_shape = transform_landmarks(self.mean_shape, rot_mat)
-        return GPAAlignment(mean_shape)(sample)
-
-
 class GPAAlignment:
     """
     Employ Generalised Procrusters analysis to align both the image and the landmarks, based on the reference
@@ -184,8 +119,7 @@ class GPAAlignment:
             self.mean_shape = mean_shape
 
     def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks'
-        ]
+        image, landmarks = sample['image'], sample['landmarks']
         _, aligned_landmarks, tform = gpa.procrustes(self.mean_shape, landmarks)
 
         rotate = np.identity(3)
@@ -222,11 +156,6 @@ class HeatMapGenerator:
         self.sigma = sigma
         self.combine_same_aus = combine_same_aus
 
-    def compute_percent_hiding(self, landmarks, point):
-        # For each AU points, it should have one left, and one right point. But when the person turn their head,
-        # One should be hided by some %
-        pass
-
     def render_gaussian_heatmap(self, coord, sigma):
         in_shape = self.input_shape
         out_shape = self.output_shape
@@ -248,7 +177,7 @@ class HeatMapGenerator:
         for au in self.aus:
             au_coord = sample['coord_' + au]
             tmp_idx = []
-            for x in au_coord:
+            for _ in au_coord:
                 intensities.append(sample[au])
                 tmp_idx.append(len(intensities) - 1)
             aus_idx.append(tmp_idx)
@@ -272,5 +201,3 @@ class HeatMapGenerator:
         # image_debug_utils.show_heatmaps_aus(sample, gt_heatmap / 5)
         sample['heatmap'] = gt_heatmap
         return sample
-
-
