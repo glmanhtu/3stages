@@ -4,8 +4,7 @@ from statistics import mean
 
 import torch
 
-from common.utils.constants import UNBC_DATASET_PATH
-from common.utils.random_utils import RandomSequence
+from utils.constants import UNBC_DATASET_PATH
 from databases.unbc import unbc_mcmaster
 from databases.unbc.unbc_mcmaster import UNBCMcMasterDataset
 

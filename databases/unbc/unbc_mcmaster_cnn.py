@@ -3,8 +3,7 @@ import math
 import random
 from statistics import mean
 
-from common.utils.constants import UNBC_DATASET_PATH
-from common.utils.random_utils import RandomItem
+from utils.constants import UNBC_DATASET_PATH
 from databases.unbc import unbc_mcmaster
 from databases.unbc.unbc_mcmaster import UNBCMcMasterDataset, UNBC_AUS
 
@@ -72,7 +71,7 @@ class UNBCCNNDataset(UNBCMcMasterDataset):
         for idx, item in enumerate(ids):
             frame_has_au = False
             for key in aus:
-                if key in UNBC_AUS and not isinstance(item, RandomItem) and item[key] > 0:
+                if key in UNBC_AUS and item[key] > 0:
                     frame_has_au = True
                     break
             if frame_has_au:

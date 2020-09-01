@@ -1,6 +1,8 @@
 import logging
 
 import torch
+from facenet_pytorch.models.inception_resnet_v1 import InceptionResnetV1
+from torch.nn import L1Loss, MSELoss
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -9,11 +11,12 @@ from databases.unbc.unbc_mcmaster_cnn import UNBCCNNDataset
 from databases.unbc.unbc_mcmaster_rnn import UNBCRNNDataset
 from network import rnn, inception_resnet
 from preprocessing.image import FixedImageStandardization, AUCentralLocalisation, HeatMapGenerator, \
-    GPAAlignment, CentralCropV1
+    GPAAlignment, CentralCrop
 from utils import dl_utils, cnn_utils, rnn_utils, resource_utils, metric_utils
 from utils.constants import device, AU_CENTRAL_POINTS
 from utils.dl_utils import id_collate
 from utils.resource_utils import get_cache_path
+import numpy as np
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s')
 
@@ -21,10 +24,10 @@ aus = ['au_4', 'au_6', 'au_9']
 total_aus = dl_utils.get_list_aus(aus, AU_CENTRAL_POINTS)
 
 subjects = unbc_mcmaster.get_subjects()
-hm_transforms = transforms.Compose([GPAAlignment(), CentralCropV1(160),
+hm_transforms = transforms.Compose([GPAAlignment(), CentralCrop(160),
                                     AUCentralLocalisation(AU_CENTRAL_POINTS),
                                     HeatMapGenerator(aus, input_shape=(160, 160), output_shape=(64, 64))])
-init_transform = transforms.Compose([GPAAlignment(), CentralCropV1(160)])
+init_transform = transforms.Compose([GPAAlignment(), CentralCrop(160)])
 pre_processing = transforms.Compose([
     transforms.ToTensor(), FixedImageStandardization()
 ])
@@ -76,6 +79,22 @@ def cnn_estimator(epoch, train_loss, fold, predict, actual):
     return metrics[0], metrics
 
 
+def hm_estimator(epoch, train_loss, fold, predict, actual):
+    metrics = []
+    mse_criterion, mae_criterion = MSELoss(), L1Loss()
+    with torch.set_grad_enabled(False):
+        for i, name in enumerate(total_aus):
+            mse, mae = mse_criterion(predict[i], actual[i]), mae_criterion(predict[i], actual[i])
+            metrics.append([mse.item(), mae.item()])
+
+    metrics = np.array(metrics)
+    metrics = tuple(metrics.mean(axis=0))
+
+    logging.info('HM Fold: {} Epoch: {} avg_mse: {:.4f}, mae: {:.4f}'.format(fold, epoch, metrics[0], metrics[1]))
+
+    return metrics[0], metrics
+
+
 def rnn_estimator(epoch, train_loss, fold, predict, actual):
     """
     Estimate performance of the RNN model
@@ -90,6 +109,36 @@ def rnn_estimator(epoch, train_loss, fold, predict, actual):
 
     logging.info('RNN Fold: {} Epoch: {} mse: {:.4f}, mae: {:.4f}'.format(fold, epoch, metrics[0], metrics[1]))
     return metrics[0], metrics
+
+
+def hm_leave_one_out_validation(fold, conf, checkpoint):
+    """
+    Leave @fold out validation
+    First stage of predicting facial action unit intensities
+    Fine-tune VGG-Faces model with UNBC dataset for estimating AUs intensities
+    The best model with lowest MSE will be saved into the given checkpoint file
+    If this checkpoint file exists, then only validation operator will be performed
+
+    @rtype: (DL model, metrics estimated, raw result)
+    """
+
+    lr, batch_size, n_layer_frozen = conf['lr'], conf['batch_size'], conf['n_layer_frozen']
+
+    subjects_left = [x for x in subjects if x != fold]
+
+    # Validation data will contain only the given subject, so we exclude the rest
+    val_data = UNBCCNNDataset(excluded_subjects=subjects_left, init_transform=hm_transforms,
+                              transform=pre_processing, apply_balancing=False, exclude_black_frames=True)
+    val_loader = DataLoader(val_data, batch_size=batch_size, num_workers=10, pin_memory=True, collate_fn=id_collate)
+
+    dl_model = inception_resnet.InceptionHeatMap(num_aus=len(total_aus), device=device)
+    load_status, metrics, predicts = cnn_utils.load_pretrained_model(
+        checkpoint, dl_model, fold, val_loader, get_labels_fn=get_labels, estimator_fn=hm_estimator,
+        val_reduce_fn=val_reduce_fn)
+    if not load_status:
+        raise Exception('Unable to load checkpoint ' + checkpoint)
+
+    return dl_model, metrics, predicts
 
 
 def cnn_leave_one_out_validation(fold, conf, dl_model, checkpoint):
@@ -164,8 +213,10 @@ def cross_validation():
 
         # First stage: Encoding with HeatMap
         s1_checkpoint = resource_utils.get_checkpoint_path(name='%s_hm.ckpt' % subject)
-        dl_model = inception_resnet.InceptionHeatMap(num_aus=len(total_aus), device=device)
-        load_status, metrics, predicts = cnn_utils.load_pretrained_model(s1_checkpoint, dl_model)
+        hm_leave_one_out_validation(subject, hm_conf, s1_checkpoint)
+        dl_model = InceptionResnetV1(classify=True, device=device, num_classes=1)
+        load_status, _, _ = cnn_utils.load_pretrained_model(s1_checkpoint, dl_model, subject,
+                                                            drop_unknown_layers=True, strict=False)
         if not load_status:
             raise Exception('Unable to load checkpoint ' + s1_checkpoint)
 
@@ -202,3 +253,7 @@ def cross_validation():
     print('Final avg_metrics: average_precision_score: {:.4f}, auc: {:.4f}, acc: {:.4f}'.format(aps, auc, accuracy))
 
     return mse_loss
+
+
+if __name__ == '__main__':
+    cross_validation()

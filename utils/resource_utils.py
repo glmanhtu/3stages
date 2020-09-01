@@ -8,7 +8,7 @@ def get_resource(path, create_parent_dir=False):
     """
     Get the abs path from the resource folder
     """
-    abs_path = os.path.join(os.path.dirname(dir_path), 'resources', *path.split('/'))
+    abs_path = os.path.join(dir_path, 'resources', *path.split('/'))
     if create_parent_dir:
         parent_dir = os.path.dirname(abs_path)
         os.makedirs(parent_dir, exist_ok=True)

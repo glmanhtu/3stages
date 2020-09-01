@@ -69,7 +69,7 @@ class Resize:
         return sample
 
 
-class CentralCropV1(object):
+class CentralCrop(object):
     """Crop the image in a sample.
         Make sure the head is in the central of image
     Args:
@@ -129,106 +129,6 @@ class CentralCropV1(object):
         sample['image'] = image
         sample['landmarks'] = landmarks
 
-        return sample
-
-
-class CentralCropV3:
-
-    def __init__(self, output_size, anchor=None):
-        assert isinstance(output_size, (int, tuple))
-        if isinstance(output_size, int):
-            self.output_size = (output_size, output_size)
-        else:
-            assert len(output_size) == 2
-            self.output_size = output_size
-        if anchor is None:
-            self.anchor = np.array([[127.6475, 227.8161], [79.1608, 87.0376], [176.8392, 87.0376]], np.float32)
-        else:
-            self.anchor = anchor
-
-    def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
-        idx = [8, 36, 45]  # """Anchor points"""
-        pts = np.float32(landmarks[idx, :])
-        M = cv2.getAffineTransform(pts, self.anchor)
-        dst = cv2.warpAffine(image, M, self.output_size)
-        sample['image'] = dst
-        sample['landmarks'] = transform_landmarks(landmarks, M)
-        return sample
-
-
-class CentralCrop(object):
-    """Crop the image in a sample.
-        Make sure the head is in the central of image
-    Args:
-        output_size (tuple or int): Desired output size. If int, square crop is made.
-    """
-
-    def __init__(self, output_size, gap_percent=0.05, showing_top=0.65):
-        assert isinstance(output_size, (int, tuple))
-        if isinstance(output_size, int):
-            self.output_size = (output_size, output_size)
-        else:
-            assert len(output_size) == 2
-            self.output_size = output_size
-        self.percent = gap_percent
-        self.showing_top = showing_top
-
-    def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
-
-        h, w = image.shape[:2]
-        new_h, new_w = self.output_size
-
-        min_x, min_y, max_x, max_y = get_landmark_most_points(landmarks)
-
-        # if max_x > w:
-        #     different = max_x - w
-        #     min_x -= different
-        # if max_y > h:
-        #     different = max_y - h
-        #     min_y -= different
-
-        max_face = max(max_y - min_y, max_x - min_x)
-        gap = min((max_y - min_y), (max_x - min_x)) * self.percent
-        distance = new_w
-        if distance > min(w, h):
-            distance = min(w, h)
-
-        x = int((min_x + max_x) / 2 - distance / 2)
-        if x < 0:
-            x = 0
-        if x + distance < max_x:
-            x = int(max_x - distance)
-        if x + distance > w:
-            x = w - distance
-        y = int((min_y - gap) * self.showing_top)
-        if y < 0:
-            y = 0
-        if y + distance < max_y:
-            y = int(max_y - distance)
-        if y + distance > h:
-            y = h - distance
-
-        image = image[y: y + distance, x: x + distance].copy()
-
-        assert image.shape[0] == image.shape[1]
-
-        landmarks = landmarks - np.array([x, y])
-
-        if new_w != image.shape[1]:
-            # scale up
-            image = cv2.resize(image, self.output_size, interpolation=cv2.INTER_LANCZOS4)
-        # else:
-        #     # Shrinking
-        #     image = cv2.resize(image, self.output_size, interpolation=cv2.INTER_CUBIC)
-
-        landmarks *= np.array([new_w, new_h]) / float(distance)
-
-        sample['image'] = image
-        sample['landmarks'] = landmarks
-
-        # image_debug_utils.show_landmarks(sample['image'], landmarks)
         return sample
 
 
