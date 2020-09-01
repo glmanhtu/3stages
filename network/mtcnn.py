@@ -1,3 +1,5 @@
+# Adapted from https://github.com/timesler/facenet-pytorch
+
 import cv2
 import numpy as np
 import torch
