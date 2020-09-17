@@ -3,7 +3,6 @@ import numpy as np
 import torch
 
 from preprocessing import gpa
-from preprocessing.unbc_transform import get_landmark_most_points
 from utils.constants import UNBC_BASE_GPA_LANDMARKS_PATH
 
 
@@ -14,6 +13,20 @@ def transform_landmarks(landmarks, rotate):
     ones = np.ones(shape=(len(landmarks), 1))
     points_ones = np.hstack([landmarks, ones])
     return rotate.dot(points_ones.T).T
+
+
+def get_landmark_most_points(landmarks):
+    min_x, min_y, max_x, max_y = 9999, 9999, 0, 0
+    for landmark in landmarks:
+        if min_x > landmark[0]:
+            min_x = landmark[0]
+        if max_x < landmark[0]:
+            max_x = landmark[0]
+        if min_y > landmark[1]:
+            min_y = landmark[1]
+        if max_y < landmark[1]:
+            max_y = landmark[1]
+    return min_x, min_y, max_x, max_y
 
 
 class FixedImageStandardization(object):
