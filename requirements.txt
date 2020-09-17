@@ -1,4 +1,4 @@
-pingouin
+pingouin~=0.3.7
 numpy==1.19.0
 scipy==1.5.2
 torch==1.6
@@ -6,4 +6,9 @@ torchvision==0.7
 scikit-learn==0.22.2.post1
 opencv-python==4.2.0.32
 facenet-pytorch==2.2.9
-tqdm
+tqdm~=4.48.2
+
+pandas~=1.1.1
+requests~=2.24.0
+matplotlib~=3.3.1
+Pillow~=7.2.0

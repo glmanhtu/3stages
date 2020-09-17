@@ -49,7 +49,7 @@ rnn_conf = {
     'batch_size': 72,
     'n_layers': 2,
     'input_dim': 1792,
-    'n_neurons': 944,
+    'n_neurons': 744,
     'dropout': 0.5,
     'seq_length': 16
 }
@@ -191,7 +191,7 @@ def rnn_leave_one_out_validation(fold, conf, dl_model, checkpoint):
 
     # The encoding image sequences will take way too long, especially when we do it for multiple epochs
     # So, do it one time and save into local hard disk
-    val_data = rnn_utils.generate_rnn_cache_dataset( val_data, dl_model, get_cache_path(name="%s_val" % fold))
+    val_data = rnn_utils.generate_rnn_cache_dataset(val_data, dl_model, get_cache_path(name="%s_val" % fold))
     val_loader = DataLoader(val_data, batch_size=batch_size, num_workers=10, pin_memory=True, collate_fn=id_collate)
 
     lstm_model = rnn.LSTM(input_dim, n_neurons, num_layers=n_layers, num_classes=1, dropout=dropout).to(device)
@@ -212,7 +212,7 @@ def cross_validation():
     for idx, subject in enumerate(subjects):
 
         # First stage: Encoding with HeatMap
-        s1_checkpoint = resource_utils.get_checkpoint_path(name='%s_hm.ckpt' % subject)
+        s1_checkpoint = resource_utils.get_checkpoint_file_path(name='%s_hm.ckpt' % subject)
         hm_leave_one_out_validation(subject, hm_conf, s1_checkpoint)
         dl_model = InceptionResnetV1(classify=True, device=device, num_classes=1)
         load_status, _, _ = cnn_utils.load_pretrained_model(s1_checkpoint, dl_model, subject,
@@ -221,7 +221,7 @@ def cross_validation():
             raise Exception('Unable to load checkpoint ' + s1_checkpoint)
 
         # Second stage: Encoding with PSPI MSE
-        s2_checkpoint = resource_utils.get_checkpoint_path(name='%s_cnn.ckpt' % subject)
+        s2_checkpoint = resource_utils.get_checkpoint_file_path(name='%s_cnn.ckpt' % subject)
         dl_model, metrics, predicts = cnn_leave_one_out_validation(subject, cnn_conf, dl_model, s2_checkpoint)
         predict, actual, labels = predicts
 
@@ -233,7 +233,7 @@ def cross_validation():
         load_status, _, _ = cnn_utils.load_pretrained_model(s2_checkpoint, dl_model)
         if not load_status:
             raise Exception('Unable to load checkpoint ' + s2_checkpoint)
-        s3_checkpoint = resource_utils.get_checkpoint_path(name='%s_rnn.ckpt' % subject)
+        s3_checkpoint = resource_utils.get_checkpoint_file_path(name='%s_rnn.ckpt' % subject)
         dl_model, metrics, predicts = rnn_leave_one_out_validation(subject, rnn_conf, dl_model, s3_checkpoint)
         predict, actual, labels = predicts
 
@@ -241,16 +241,14 @@ def cross_validation():
         rnn_all_actuals.append(torch.cat([torch.flatten(x) for x in actual]))
 
     actual, predict = torch.cat(cnn_all_actuals), torch.cat(cnn_all_predicts)
-    mse_loss, mae_loss, pcc, aps, auc, accuracy = metric_utils.regression_performance_analysis(actual, predict)
+    mse_loss, mae_loss, pcc = metric_utils.regression_performance_analysis(actual, predict)
 
     print('CNN avg_metrics: mse_loss: {:.4f}, mae_loss: {:.4f}, pcc: {:.4f}'.format(mse_loss, mae_loss, pcc))
-    print('CNN avg_metrics: average_precision_score: {:.4f}, auc: {:.4f}, acc: {:.4f}'.format(aps, auc, accuracy))
 
     actual, predict = torch.cat(rnn_all_actuals), torch.cat(rnn_all_predicts)
-    mse_loss, mae_loss, pcc, aps, auc, accuracy = metric_utils.regression_performance_analysis(actual, predict)
+    mse_loss, mae_loss, pcc = metric_utils.regression_performance_analysis(actual, predict)
 
     print('Final avg_metrics: mse_loss: {:.4f}, mae_loss: {:.4f}, pcc: {:.4f}'.format(mse_loss, mae_loss, pcc))
-    print('Final avg_metrics: average_precision_score: {:.4f}, auc: {:.4f}, acc: {:.4f}'.format(aps, auc, accuracy))
 
     return mse_loss
 
