@@ -242,13 +242,15 @@ def cross_validation():
 
     actual, predict = torch.cat(cnn_all_actuals), torch.cat(cnn_all_predicts)
     mse_loss, mae_loss, pcc = metric_utils.regression_performance_analysis(actual, predict)
+    icc = metric_utils.calculate_icc(actual, predict)
 
-    print('CNN avg_metrics: mse_loss: {:.4f}, mae_loss: {:.4f}, pcc: {:.4f}'.format(mse_loss, mae_loss, pcc))
+    print('CNN avg_metrics: mse: {:.2f}, mae: {:.2f}, pcc: {:.2f}, icc: {:.2f}'.format(mse_loss, mae_loss, pcc, icc))
 
     actual, predict = torch.cat(rnn_all_actuals), torch.cat(rnn_all_predicts)
     mse_loss, mae_loss, pcc = metric_utils.regression_performance_analysis(actual, predict)
+    icc = metric_utils.calculate_icc(actual, predict)
 
-    print('Final avg_metrics: mse_loss: {:.4f}, mae_loss: {:.4f}, pcc: {:.4f}'.format(mse_loss, mae_loss, pcc))
+    print('Final avg_metrics: mse: {:.2f}, mae: {:.2f}, pcc: {:.2f}, icc: {:.2f}'.format(mse_loss, mae_loss, pcc, icc))
 
     return mse_loss
 
