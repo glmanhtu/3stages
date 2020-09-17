@@ -15,7 +15,7 @@ class CacheDataset(Dataset):
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir, exist_ok=True)
             else:
-                self.data = [f for f in glob.glob(os.path.join(cache_dir, "**/*.pt"), recursive=True)]
+                self.data = [f for f in glob.glob(os.path.join(cache_dir, "**", "*.pt"), recursive=True)]
 
     def cleanup(self):
         if not self.in_memory:

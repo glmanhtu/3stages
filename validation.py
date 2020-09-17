@@ -18,6 +18,7 @@ from utils.dl_utils import id_collate
 from utils.resource_utils import get_cache_path
 import numpy as np
 
+torch.backends.cudnn.benchmark = True
 logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s')
 
 aus = ['au_4', 'au_6', 'au_9']
