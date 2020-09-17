@@ -29,7 +29,7 @@ class PainAnalysingEstimator(threading.Thread):
         self.__input_queue = input_queue
         self.__output_queue = output_queue
         self.__model = InceptionResnetV1(pretrained='vggface2', classify=classify, device=device, num_classes=1)
-        checkpoint = resource_utils.get_checkpoint_file_path(name='108-th108cnn.ckpt')
+        checkpoint = resource_utils.get_checkpoint_file_path(name='108-th108_cnn.ckpt')
         load_status, _, _ = cnn_utils.load_pretrained_model(checkpoint, self.__model)
         if not load_status:
             raise Exception('Unable to load model ' + checkpoint)
