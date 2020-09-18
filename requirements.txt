@@ -1,4 +1,4 @@
-pingouin~=0.3.7
+pingouin~=0.3.8
 numpy==1.19.0
 scipy==1.5.2
 torch==1.6
