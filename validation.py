@@ -76,7 +76,7 @@ def cnn_estimator(epoch, train_loss, fold, predict, actual):
 
     metrics = metric_utils.regression_performance_analysis(actual[0], predict[0])
 
-    logging.info('CNN Fold: {} Epoch: {} mse: {:.4f}, mae: {:.4f}'.format(fold, epoch, metrics[0], metrics[1]))
+    logging.info('CNN Fold: {} | mse: {:.4f}, mae: {:.4f}'.format(fold, metrics[0], metrics[1]))
     return metrics[0], metrics
 
 
@@ -91,7 +91,7 @@ def hm_estimator(epoch, train_loss, fold, predict, actual):
     metrics = np.array(metrics)
     metrics = tuple(metrics.mean(axis=0))
 
-    logging.info('HM Fold: {} Epoch: {} avg_mse: {:.4f}, mae: {:.4f}'.format(fold, epoch, metrics[0], metrics[1]))
+    logging.info('HM Fold: {} | avg_mse: {:.4f}, mae: {:.4f}'.format(fold, metrics[0], metrics[1]))
 
     return metrics[0], metrics
 
@@ -108,7 +108,7 @@ def rnn_estimator(epoch, train_loss, fold, predict, actual):
     actual = torch.cat([torch.flatten(x) for x in actual])
     metrics = metric_utils.regression_performance_analysis(actual, predict)
 
-    logging.info('RNN Fold: {} Epoch: {} mse: {:.4f}, mae: {:.4f}'.format(fold, epoch, metrics[0], metrics[1]))
+    logging.info('RNN Fold: {} | mse: {:.4f}, mae: {:.4f}'.format(fold, metrics[0], metrics[1]))
     return metrics[0], metrics
 
 
@@ -242,16 +242,18 @@ def cross_validation():
         rnn_all_actuals.append(torch.cat([torch.flatten(x) for x in actual]))
 
     actual, predict = torch.cat(cnn_all_actuals), torch.cat(cnn_all_predicts)
-    mse_loss, mae_loss, pcc = metric_utils.regression_performance_analysis(actual, predict)
+    mse_loss, mae, pcc = metric_utils.regression_performance_analysis(actual, predict)
     icc = metric_utils.calculate_icc(actual, predict)
 
-    print('CNN avg_metrics: mse: {:.2f}, mae: {:.2f}, pcc: {:.2f}, icc: {:.2f}'.format(mse_loss, mae_loss, pcc, icc))
+    logging.info('\n--------------------------------------------------\n')
+
+    logging.info('Stage 1+2: mse: {:.2f}, mae: {:.2f}, pcc: {:.2f}, icc: {:.2f}'.format(mse_loss, mae, pcc, icc))
 
     actual, predict = torch.cat(rnn_all_actuals), torch.cat(rnn_all_predicts)
-    mse_loss, mae_loss, pcc = metric_utils.regression_performance_analysis(actual, predict)
+    mse_loss, mae, pcc = metric_utils.regression_performance_analysis(actual, predict)
     icc = metric_utils.calculate_icc(actual, predict)
 
-    print('Final avg_metrics: mse: {:.2f}, mae: {:.2f}, pcc: {:.2f}, icc: {:.2f}'.format(mse_loss, mae_loss, pcc, icc))
+    logging.info('Three stages: mse: {:.2f}, mae: {:.2f}, pcc: {:.2f}, icc: {:.2f}'.format(mse_loss, mae, pcc, icc))
 
     return mse_loss
 
