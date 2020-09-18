@@ -4,6 +4,7 @@ import torch
 from facenet_pytorch.models.inception_resnet_v1 import InceptionResnetV1
 
 from network import rnn
+from network.inception_resnet import get_pretrained_facenet
 from network.mtcnn import MTCNN
 from utils import resource_utils, cnn_utils, rnn_utils
 from utils.constants import device
@@ -28,8 +29,8 @@ class PainAnalysingEstimator(threading.Thread):
         super().__init__()
         self.__input_queue = input_queue
         self.__output_queue = output_queue
-        self.__model = InceptionResnetV1(pretrained='vggface2', classify=classify, device=device, num_classes=1)
-        checkpoint = resource_utils.get_checkpoint_file_path(name='108-th108_cnn.ckpt')
+        self.__model = get_pretrained_facenet(classify=classify)
+        checkpoint = resource_utils.get_checkpoint_file_path(name='107-hs107_cnn.ckpt')
         load_status, _, _ = cnn_utils.load_pretrained_model(checkpoint, self.__model)
         if not load_status:
             raise Exception('Unable to load model ' + checkpoint)
@@ -53,9 +54,9 @@ class LSTMPainEstimator(threading.Thread):
         self.__output_queue = output_queue
         self.__sequence_length = sequence_length
         n_layers, n_neurons, dropout = 2, 744, 0.5
-        checkpoint = resource_utils.get_checkpoint_file_path(name='095-tv095_lstm.ckpt')
+        checkpoint = resource_utils.get_checkpoint_file_path(name='107-hs107_rnn.ckpt')
         self.__model = rnn.LSTM(1792, n_neurons, num_layers=n_layers, num_classes=1, dropout=dropout).to(device)
-        load_status, _ = rnn_utils.load_pretrained_model(checkpoint, self.__model)
+        load_status, _, _ = rnn_utils.load_pretrained_model(checkpoint, self.__model)
         if not load_status:
             raise Exception('Unable to load model ' + checkpoint)
 

@@ -100,7 +100,7 @@ class InceptionHeatMap(InceptionResnetV1):
 
 def get_pretrained_facenet(classify=True, num_classes=1):
     if not classify:
-        model = InceptionResnetCustom(pretrained='vggface2', classify=classify, device=device_id,
+        model = InceptionResnetCustom(pretrained='vggface2', classify=True, device=device_id,
                                       num_classes=num_classes)
     else:
         model = InceptionResnetV1(pretrained='vggface2', classify=classify, device=device_id, num_classes=num_classes)

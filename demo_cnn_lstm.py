@@ -5,13 +5,15 @@ import torch
 from matplotlib.colors import LinearSegmentedColormap
 
 from demonstration.analysing.pain_level_analysing import FacialExtractor, PainAnalysingEstimator, LSTMPainEstimator
+from demonstration.source.unbc_source import UNBCSource
 from demonstration.source.webcam_source import WebcamVideoStream
 from demonstration.utils.fps import FPS
 
 torch.backends.cudnn.benchmark = True
 
 cmap = LinearSegmentedColormap.from_list('', ["green", "yellow", "red"])
-stream_source = WebcamVideoStream(src=0, img_max_width=800)
+# stream_source = WebcamVideoStream(src=0, img_max_width=800)
+stream_source = UNBCSource(img_max_width=600)
 fps = FPS()
 cnn_analysing_queue = queue.Queue()
 lstm_analysing_queue = queue.Queue()
