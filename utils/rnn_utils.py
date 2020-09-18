@@ -57,7 +57,7 @@ def generate_rnn_cache_dataset(dataset, dl_model, cache_path, force_create=False
         return cache_dataset
     if force_create:
         cache_dataset.cleanup()
-    data_loader = DataLoader(dataset, batch_size=10, num_workers=10, pin_memory=True, collate_fn=id_collate)
+    data_loader = DataLoader(dataset, batch_size=10, num_workers=5, pin_memory=True, collate_fn=id_collate)
     for sequences in data_loader:
         inputs = sequences['image'].to(device, dtype=torch.float, non_blocking=True)
         features = extract_image_features(dl_model, inputs)
