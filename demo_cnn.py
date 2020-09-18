@@ -1,3 +1,4 @@
+import argparse
 import queue
 
 import cv2
@@ -5,15 +6,25 @@ import torch
 from matplotlib.colors import LinearSegmentedColormap
 
 from demonstration.analysing.pain_level_analysing import FacialExtractor, PainAnalysingEstimator
-# from demonstration.source.unbc_source import UNBCSource
+from demonstration.source.unbc_source import UNBCSource
 from demonstration.source.webcam_source import WebcamVideoStream
 from demonstration.utils.fps import FPS
 
 torch.backends.cudnn.benchmark = True
 
+parser = argparse.ArgumentParser(description='Pain level intensity estimation using Stage 1+2')
+parser.add_argument('--webcam', dest='webcam', action='store_true', help='Using webcam as input')
+parser.add_argument('--video-file', dest='video_path', action='store', help='Path to video file', required=False)
+
+args = parser.parse_args()
+
 cmap = LinearSegmentedColormap.from_list('', ["green", "yellow", "red"])
-stream_source = WebcamVideoStream(src=0, img_max_width=600)
-# stream_source = UNBCSource(img_max_width=600)
+if args.webcam:
+    stream_source = WebcamVideoStream(src=0, img_max_width=600)
+elif args.video_path is not None:
+    stream_source = WebcamVideoStream(src=args['video_path'], img_max_width=600)
+else:
+    stream_source = UNBCSource(img_max_width=600)
 fps = FPS()
 analysing_queue = queue.Queue()
 visualising_queue = queue.Queue()
