@@ -241,11 +241,11 @@ def cross_validation():
         rnn_all_predicts.append(torch.cat([torch.flatten(x) for x in predict]))
         rnn_all_actuals.append(torch.cat([torch.flatten(x) for x in actual]))
 
+    logging.info('--------------------------------------------------\n')
+
     actual, predict = torch.cat(cnn_all_actuals), torch.cat(cnn_all_predicts)
     mse_loss, mae, pcc = metric_utils.regression_performance_analysis(actual, predict)
     icc = metric_utils.calculate_icc(actual, predict)
-
-    logging.info('\n--------------------------------------------------\n')
 
     logging.info('Stage 1+2: mse: {:.2f}, mae: {:.2f}, pcc: {:.2f}, icc: {:.2f}'.format(mse_loss, mae, pcc, icc))
 

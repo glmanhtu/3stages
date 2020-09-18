@@ -1,5 +1,4 @@
 import math
-import os
 
 import numpy as np
 import pandas as pd
@@ -46,13 +45,6 @@ def calculate_icc(actual, predict):
     judges = pd.Series(judge_origin + judge_model)
     scores = pd.Series(np.concatenate((actual, predict)))
     data = pd.DataFrame({'ids': ids, 'judges': judges, 'scores': scores})
-    icc = pg.intraclass_corr(data=data, targets='ids', raters='judges',
-                             ratings='scores')
+    icc = pg.intraclass_corr(data=data, targets='ids', raters='judges', ratings='scores')
     return icc.ICC[2]
-
-
-def check_env(key, value):
-    if key in os.environ and os.environ[key] == value:
-        return True
-    return False
 

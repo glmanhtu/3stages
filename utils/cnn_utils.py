@@ -74,19 +74,3 @@ def load_pretrained_model(checkpoint, model_ft, fold=None, val_data_loader=None,
     mse, prediction = estimator_fn(0, 0., fold, predict, actual)
     return True, prediction, (predict, actual, ids)
 
-
-def generate_cache_dataset(dataset, keys=None, cache_path=None, force_create=False, in_memory=False):
-    cache_dataset = CacheDataset(cache_dir=cache_path, in_memory=in_memory)
-    if cache_dataset.has_cache() and not force_create:
-        return cache_dataset
-    if force_create:
-        cache_dataset.cleanup()
-    data_loader = DataLoader(dataset, batch_size=35, shuffle=True, num_workers=15, collate_fn=id_collate)
-    for records in data_loader:
-        for idx, item in enumerate(records['id']):
-            record = {'id': item}
-            for key in keys:
-                record = {**record, key: records[key][idx]}
-            cache_dataset.add_record(record)
-    return cache_dataset
-
