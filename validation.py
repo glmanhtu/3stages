@@ -230,7 +230,7 @@ def cross_validation():
         cnn_all_actuals.append(actual[0].squeeze())
 
         # Third stage: LSTM training
-        dl_model = inception_resnet.get_pretrained_facenet(classify=False)
+        dl_model = inception_resnet.get_pretrained_facenet(classify=False, pretrained=None)
         load_status, _, _ = cnn_utils.load_pretrained_model(s2_checkpoint, dl_model)
         if not load_status:
             raise Exception('Unable to load checkpoint ' + s2_checkpoint)

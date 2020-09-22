@@ -29,7 +29,7 @@ class PainAnalysingEstimator(threading.Thread):
         super().__init__()
         self.__input_queue = input_queue
         self.__output_queue = output_queue
-        self.__model = get_pretrained_facenet(classify=classify)
+        self.__model = get_pretrained_facenet(classify=classify, pretrained=None)
         checkpoint = resource_utils.get_checkpoint_file_path(name='107-hs107_cnn.ckpt')
         load_status, _, _ = cnn_utils.load_pretrained_model(checkpoint, self.__model)
         if not load_status:
