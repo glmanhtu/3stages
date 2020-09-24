@@ -1,4 +1,5 @@
 import argparse
+import os
 import queue
 
 import cv2
@@ -22,7 +23,8 @@ cmap = LinearSegmentedColormap.from_list('', ["green", "yellow", "red"])
 if args.webcam:
     stream_source = WebcamVideoStream(src=0, img_max_width=600)
 elif args.video_path is not None:
-    stream_source = WebcamVideoStream(src=args['video_path'], img_max_width=600)
+    assert os.path.isfile(args.video_path)
+    stream_source = WebcamVideoStream(src=args.video_path, img_max_width=600)
 else:
     stream_source = UNBCSource(img_max_width=600)
 
