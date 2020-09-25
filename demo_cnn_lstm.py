@@ -1,6 +1,7 @@
 import argparse
 import os
 import queue
+import sys
 
 import cv2
 import torch
@@ -56,3 +57,5 @@ while True:
     cv2.putText(image, 'FPS: %d' % fps.fps(), (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)
     cv2.imshow('frame', image)
     cv2.waitKey(1)
+
+

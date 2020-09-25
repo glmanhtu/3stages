@@ -39,7 +39,7 @@ def load_pretrained_model(checkpoint, model_ft, val_data_loader=None, fold='', g
                           estimator_fn=None):
     if not os.path.isfile(checkpoint):
         return False, None, None
-    model_ft.load_state_dict(torch.load(checkpoint))
+    model_ft.load_state_dict(torch.load(checkpoint, map_location=device))
     model_ft.eval()
 
     if not val_data_loader:

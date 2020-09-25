@@ -1,3 +1,5 @@
 venv
 resources/unbc/dataset
 resources/disfa
+resources/checkpoints
+resources/cache

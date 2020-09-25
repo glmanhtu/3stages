@@ -13,6 +13,7 @@ from utils.constants import device
 class FacialExtractor(threading.Thread):
     def __init__(self, input_queue, output_queue):
         super().__init__()
+        self.setDaemon(True)
         self.__input_queue = input_queue
         self.__analysing_queue = output_queue
         self.__mtcnn = MTCNN(margin=20, post_process=True, min_keep_prob=0.8, select_largest=False)
@@ -27,6 +28,7 @@ class FacialExtractor(threading.Thread):
 class PainAnalysingEstimator(threading.Thread):
     def __init__(self, input_queue, output_queue, classify=True):
         super().__init__()
+        self.setDaemon(True)
         self.__input_queue = input_queue
         self.__output_queue = output_queue
         self.__model = get_pretrained_facenet(classify=classify, pretrained=None)
@@ -50,6 +52,7 @@ class PainAnalysingEstimator(threading.Thread):
 class LSTMPainEstimator(threading.Thread):
     def __init__(self, input_queue, output_queue, sequence_length=16):
         super().__init__()
+        self.setDaemon(True)
         self.__input_queue = input_queue
         self.__output_queue = output_queue
         self.__sequence_length = sequence_length

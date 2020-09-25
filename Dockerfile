@@ -8,7 +8,8 @@ RUN apt-get -y install python3
 RUN apt-get -y install python3-pip
 
 WORKDIR /code
-ADD . .
+COPY requirements.txt ./requirements.txt
 RUN pip3 install -r ./requirements.txt
+ADD . .
 
 CMD [ "python", "./demo_cnn_lstm.py" ]

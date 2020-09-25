@@ -1,0 +1,24 @@
+FROM python:3.7-slim as base
+
+FROM base as builder
+ENV PYTHONUSERBASE /install
+RUN mkdir /install
+WORKDIR /install
+
+COPY requirements.txt /requirements.txt
+
+RUN pip install --no-warn-script-location --user torch==1.6.0+cpu torchvision==0.7.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip install --user -r /requirements.txt
+
+FROM base
+
+RUN apt-get update
+RUN apt-get install -y libglib2.0-0
+RUN apt-get install -y libsm6 libxext6 libxrender-dev
+
+WORKDIR /code
+COPY --from=builder /install /usr/local
+ADD . .
+
+
+CMD [ "python", "./demo_cnn_lstm.py" ]
