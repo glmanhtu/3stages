@@ -1,0 +1,47 @@
+Installation in Window
+
+
++ Install Visual Studio Community 2017
+
++ Install NVIDIA CUDA
+    URL: https://developer.nvidia.com/cuda-10.2-download-archives
+    Note: Depending on which version currently supported by PyTorch. For now, we're gonna install CUDA version 10.2
+
++ Install cuDNN
+    URL: https://developer.nvidia.com/rdp/cudnn-archive
+    Note: Create an account, choose the version match with the one of Nvidia Cuda
+    Guide to install cuDNN: https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
+
+Restart machine
+
++ Install Python v3.7.9
+    URL: https://www.python.org/downloads/
+    Download the corresponding python version
+    Note: Check Add Python to PATH checkbox
+
+
+Open Window Command Prompt
+    Run commands: 
+        git -c http.sslVerify=false clone https://137.74.176.241/mtvu/3stages.git
+        cd 3stages
+        pip3 install virtualenv
+        virtualenv venv
+        venv\Scripts\pip.exe install torch===1.6.0 torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+        venv\Scripts\pip.exe install -r requirements.txt
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+To run the application:
+
++ Open Window Command Prompt
++ Navigate to the 3stages folder
++ Run the following command:
+    venv\Scripts\python.exe demo_cnn.py
+
+------------------------------------------------------------------------
+To stop the application:
+
++ From Window Command Prompt that running the command, press Ctrl + c
