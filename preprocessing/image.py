@@ -1,3 +1,5 @@
+from random import randrange
+
 import cv2
 import numpy as np
 import torch
@@ -214,3 +216,22 @@ class HeatMapGenerator:
         # image_debug_utils.show_heatmaps_aus(sample, gt_heatmap / 5)
         sample['heatmap'] = gt_heatmap
         return sample
+
+
+class RandomLandmarkRotation:
+    def __init__(self, mean_shape=None, degree=20, prob=0.5):
+        if mean_shape is None:
+            self.mean_shape = np.load(UNBC_BASE_GPA_LANDMARKS_PATH)
+        else:
+            self.mean_shape = mean_shape
+        self.degree = degree
+        self.prob = prob
+
+    def __call__(self, sample):
+        should_rotate = np.random.choice(np.arange(0, 2), p=[1 - self.prob, self.prob])
+        mean_shape = self.mean_shape
+        if should_rotate:
+            angle = randrange(-self.degree, self.degree)
+            rot_mat = cv2.getRotationMatrix2D(tuple(self.mean_shape.mean(axis=0)), angle, 1.0)
+            mean_shape = transform_landmarks(self.mean_shape, rot_mat)
+        return GPAAlignment(mean_shape)(sample)

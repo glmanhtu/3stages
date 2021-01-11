@@ -10,6 +10,7 @@ N_CORES = multiprocessing.cpu_count()
 UNBC_DATASET_PATH = resource_utils.get_resource(path='unbc/dataset')
 # assert os.path.isdir(UNBC_DATASET_PATH)
 UNBC_BASE_GPA_LANDMARKS_PATH = resource_utils.get_resource(path='unbc/unbc_gpa_base_landmarks.npy')
+DISFA_BASE_GPA_LANDMARKS_PATH = resource_utils.get_resource(path='disfa/disfa_gpa_base_landmarks.npy')
 
 GPU_ID = 0 if 'PAIN_GPU_ID' not in os.environ else os.environ['PAIN_GPU_ID']
 DEVICE_ID = "cuda:" + str(GPU_ID) if torch.cuda.is_available() else "cpu"

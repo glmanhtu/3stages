@@ -20,8 +20,6 @@ class DISFADataset(Dataset):
         assert os.path.isdir(self.frame_labels_path)
         self.aam_landmarks_path = os.path.join(dataset_path, "Landmark_Points")
         assert os.path.isdir(self.aam_landmarks_path)
-        self.dlib_landmarks_path = os.path.join(dataset_path, "dlib_landmarks")
-        assert os.path.isdir(self.dlib_landmarks_path)
         self.transform = transforms
         self.excluded_subjects = excluded_subjects
         self.default_transforms = default_transform

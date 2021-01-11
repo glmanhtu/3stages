@@ -84,7 +84,6 @@ class InceptionHeatMap(InceptionResnetV1):
         x = self.repeat_1(x)
         x = self.mixed_6a(x)
         x = self.repeat_2(x)
-        x = self.dropout_2d(x)
         # x = self.mixed_7a(x)
         # x = self.repeat_3(x)
         # x = self.block8(x)
@@ -94,6 +93,7 @@ class InceptionHeatMap(InceptionResnetV1):
         x = self.up_scaling_1(x)
         x = self.up_scaling_2(x)
         x = self.up_scaling_3(x)
+        x = self.dropout_2d(x)
         x = self.final(x)
         return x
 
