@@ -15,8 +15,8 @@ torch.backends.cudnn.benchmark = True
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pain level intensity estimation using Stage 1+2')
-    parser.add_argument('--webcam', dest='webcam', action='store', help='Using webcam as input', default=True)
-    parser.add_argument('--skip-frames', dest='skip', action='store', help='Number of frames to skip', type=int, default=3)
+    parser.add_argument('--webcam', dest='webcam', action='store_true', help='Using webcam as input')
+    parser.add_argument('--skip-frames', dest='skip', action='store', help='Number of skipping frames', type=int, default=2)
     parser.add_argument('--video-file', dest='video_path', action='store', help='Path to video file', required=False)
 
     args = parser.parse_args()
@@ -37,10 +37,11 @@ if __name__ == '__main__':
 
     prev = ()
     for idx, image in enumerate(stream_source.read()):
-        image, faces, bboxes = facial_extractor.extract_face(image)
-        if idx % args.skip != 0:
+
+        if idx % (args.skip + 1) != 0:
             pain_levels = prev
         else:
+            image, faces, bboxes = facial_extractor.extract_face(image)
             pain_levels = pain_estimator.estimate(faces)
             prev = pain_levels
         for idx, bbox in enumerate(bboxes):
