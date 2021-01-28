@@ -1,7 +1,5 @@
 import argparse
 import os
-import queue
-import sys
 
 import cv2
 import torch

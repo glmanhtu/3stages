@@ -1,5 +1,3 @@
-import multiprocessing
-
 import cv2
 
 from demonstration.utils import image_utils
