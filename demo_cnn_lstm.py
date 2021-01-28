@@ -17,6 +17,7 @@ torch.backends.cudnn.benchmark = True
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pain level intensity estimation using Stage 1+2')
     parser.add_argument('--webcam', dest='webcam', action='store_true', help='Using webcam as input', default=True)
+    parser.add_argument('--skip-frames', dest='skip', action='store', help='Number of frames to skip', type=int, default=3)
     parser.add_argument('--video-file', dest='video_path', action='store', help='Path to video file', required=False)
 
     args = parser.parse_args()
@@ -31,19 +32,23 @@ if __name__ == '__main__':
         stream_source = UNBCSource(img_max_width=600)
 
     fps = FPS()
-    cnn_analysing_queue = queue.Queue()
-    lstm_analysing_queue = queue.Queue()
-    visualising_queue = queue.Queue()
 
     fps.start()
-    stream_source.start()
-    FacialExtractor(stream_source.queue, cnn_analysing_queue).start()
-    PainAnalysingEstimator(cnn_analysing_queue, lstm_analysing_queue, classify=False).start()
-    LSTMPainEstimator(lstm_analysing_queue, visualising_queue).start()
+    facial_extractor = FacialExtractor()
 
-    while True:
-        image, bboxes, pain_levels = visualising_queue.get(block=True)
-        if len(bboxes) > 0:
+    pain_estimator = PainAnalysingEstimator(classify=False)
+    lstm_estimator = LSTMPainEstimator()
+
+    prev = ()
+    for idx, image in enumerate(stream_source.read()):
+        image, faces, bboxes = facial_extractor.extract_face(image)
+        if idx % args.skip != 0 and prev is not None:
+            pain_levels = prev
+        else:
+            features = pain_estimator.estimate(faces)
+            pain_levels = lstm_estimator.estimate(bboxes, features)
+            prev = pain_levels
+        if len(bboxes) > 0 and pain_levels is not None:
             bbox = bboxes[0]
             x, y, w, h = tuple(bbox)
             pain_level = pain_levels

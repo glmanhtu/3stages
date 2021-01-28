@@ -1,6 +1,5 @@
 import argparse
 import os
-import queue
 
 import cv2
 import torch
@@ -11,11 +10,13 @@ from demonstration.source.unbc_source import UNBCSource
 from demonstration.source.webcam_source import WebcamVideoStream
 from demonstration.utils.fps import FPS
 
+torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pain level intensity estimation using Stage 1+2')
     parser.add_argument('--webcam', dest='webcam', action='store', help='Using webcam as input', default=True)
+    parser.add_argument('--skip-frames', dest='skip', action='store', help='Number of frames to skip', type=int, default=3)
     parser.add_argument('--video-file', dest='video_path', action='store', help='Path to video file', required=False)
 
     args = parser.parse_args()
@@ -27,20 +28,23 @@ if __name__ == '__main__':
         assert os.path.isfile(args.video_path)
         stream_source = WebcamVideoStream(src=args.video_path, img_max_width=600)
     else:
-        stream_source = UNBCSource(img_max_width=600)
+        stream_source = UNBCSource(src='/home/mvu/Documents/datasets/unbc', img_max_width=600)
     fps = FPS()
-    analysing_queue = queue.Queue()
-    visualising_queue = queue.Queue()
 
     fps.start()
-    stream_source.start()
-    FacialExtractor(stream_source.queue, analysing_queue).start()
-    PainAnalysingEstimator(analysing_queue, visualising_queue).start()
+    facial_extractor = FacialExtractor()
+    pain_estimator = PainAnalysingEstimator()
 
-    while True:
-        image, bboxes, pain_levels = visualising_queue.get(block=True)
+    prev = ()
+    for idx, image in enumerate(stream_source.read()):
+        image, faces, bboxes = facial_extractor.extract_face(image)
+        if idx % args.skip != 0:
+            pain_levels = prev
+        else:
+            pain_levels = pain_estimator.estimate(faces)
+            prev = pain_levels
         for idx, bbox in enumerate(bboxes):
-            if bbox is None:
+            if bbox is None or pain_levels is None:
                 continue
             x, y, w, h = tuple(bbox)
             pain_level = pain_levels[idx][0].item()
