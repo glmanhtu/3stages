@@ -6,9 +6,8 @@ from demonstration.utils import image_utils
 
 
 class WebcamVideoStream:
-    def __init__(self, src=0, img_max_width=600, max_size=100):
+    def __init__(self, src=0, img_max_width=600):
         # initialize the variable used to indicate if the thread should be stopped
-        self.queue = multiprocessing.Queue(maxsize=max_size)
         self.src = src
         self.im_width = img_max_width
 

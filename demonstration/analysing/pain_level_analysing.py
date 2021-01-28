@@ -14,8 +14,7 @@ class FacialExtractor:
                              min_keep_prob=0.8, select_largest=False, device=device).eval()
 
     def extract_face(self, original_image):
-        with torch.no_grad():
-            faces, bounding_boxes, _ = self.__mtcnn(original_image, is_brg=True, face_detect_im_width=120)
+        faces, bounding_boxes, _ = self.__mtcnn(original_image, is_brg=True, face_detect_im_width=120)
         return original_image, faces, bounding_boxes
 
 
@@ -30,10 +29,9 @@ class PainAnalysingEstimator:
 
     def estimate(self, faces):
         if len(faces) > 0:
-            with torch.set_grad_enabled(False):
-                faces = torch.stack(faces)
-                faces = faces.to(device, dtype=torch.float)
-                pain_levels_detected = self.__model(faces)
+            faces = torch.stack(faces)
+            faces = faces.to(device, dtype=torch.float)
+            pain_levels_detected = self.__model(faces)
             return pain_levels_detected
         return None
 
@@ -60,9 +58,8 @@ class LSTMPainEstimator:
                 del self.__sequence_embedded[0]
                 self.__sequence_embedded.append(embedded)
             if len(self.__sequence_embedded) == self.__sequence_length:
-                with torch.set_grad_enabled(False):
-                    sequence_embedded = torch.stack(self.__sequence_embedded)
-                    pain_level = self.__model(sequence_embedded[None]).item()
+                sequence_embedded = torch.stack(self.__sequence_embedded)
+                pain_level = self.__model(sequence_embedded[None]).item()
                 return pain_level
         return None
 

@@ -12,6 +12,7 @@ from demonstration.utils.fps import FPS
 
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
+torch.set_grad_enabled(False)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pain level intensity estimation using Stage 1+2')
@@ -44,6 +45,7 @@ if __name__ == '__main__':
             image, faces, bboxes = facial_extractor.extract_face(image)
             pain_levels = pain_estimator.estimate(faces)
             prev = pain_levels
+
         for idx, bbox in enumerate(bboxes):
             if bbox is None or pain_levels is None:
                 continue
