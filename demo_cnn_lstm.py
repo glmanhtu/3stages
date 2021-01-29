@@ -10,7 +10,10 @@ from demonstration.source.unbc_source import UNBCSource
 from demonstration.source.webcam_source import WebcamVideoStream
 from demonstration.utils.fps import FPS
 
+torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
+torch.set_grad_enabled(False)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pain level intensity estimation using Stage 1+2')
